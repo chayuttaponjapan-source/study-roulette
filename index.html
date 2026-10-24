@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Roulette</title>
+<style>
+:root{--bg:#EEF2FF;--card:#fff;--ink:#101522;--line:#101522;--sh:#101522;--mut:#5a6483;--inv:#fff;--panel:#101522;--soft:#dfe7ff;--mints:#d3f7ec;--blue:#2F5BFF;--mint:#2ED3A5;--sun:#FFC83D;--mono:"IBM Plex Mono",ui-monospace,monospace;color-scheme:light dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0f1d;--card:#151b2f;--ink:#eef1ff;--line:#cfd8ff;--sh:#2F5BFF;--mut:#98a3cc;--inv:#0b0f1d;--panel:#05070f;--soft:#1e2745;--mints:#12382f;}}
+:root[data-theme="dark"]{--bg:#0b0f1d;--card:#151b2f;--ink:#eef1ff;--line:#cfd8ff;--sh:#2F5BFF;--mut:#98a3cc;--inv:#0b0f1d;--panel:#05070f;--soft:#1e2745;--mints:#12382f;}
+*{box-sizing:border-box}html,body{height:100%}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:500;line-height:1.4}
+.app{min-height:100%;max-width:600px;margin:0 auto;padding:18px 16px 34px;display:flex;flex-direction:column}
+nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.1rem;letter-spacing:-.01em}
+.logo svg{width:34px;height:34px;background:var(--blue);border:2px solid var(--line);border-radius:10px;box-shadow:2px 2px 0 var(--sh)}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:3px}
+nav a{padding:6px 10px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--mut)}
+nav a.on{background:var(--line);color:var(--inv)}
+.page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;animation:fadein .5s ease both}
+.page[hidden]{display:none}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#p-roll,#p-review,#p-recall,#p-week,#p-passport{flex:0 1 auto;margin-top:22px;padding:22px 16px;background:var(--card);border:2px solid var(--line);border-radius:16px;box-shadow:4px 4px 0 var(--sh)}
+#p-session{flex:0 1 auto;margin-top:22px;align-items:stretch;justify-content:flex-start}
+.label{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--mut)}
+.huge{font-size:clamp(2.6rem,13vw,4rem);font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.mut{color:var(--mut);font-size:.85rem}
+button{font:inherit;font-weight:700;background:var(--blue);color:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 28px;box-shadow:3px 3px 0 var(--sh);cursor:pointer;transition:transform .1s,box-shadow .1s}
+button.alt{background:var(--card);color:var(--ink)}
+button:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--sh)}
+button:active:not(:disabled){transform:translate(3px,3px);box-shadow:0 0 0 var(--sh)}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:12px;justify-content:center;align-items:end;flex-wrap:wrap}
+.set{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.set label,.ml{display:grid;gap:6px;font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mut);text-align:center}
+input{font:inherit;font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;width:78px;text-align:center;padding:8px 4px;outline:0}
+input:focus{box-shadow:3px 3px 0 var(--blue)}
+.mode{display:flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.mode a{padding:6px 18px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--mut)}.mode a.on{background:var(--blue);color:#fff}
+#stage{min-height:290px;display:grid;place-items:center;width:100%}
+.ww{position:relative;width:270px;height:270px}
+.ww:before{content:"";position:absolute;top:-8px;left:50%;margin-left:-9px;border:9px solid transparent;border-top:18px solid var(--line);z-index:2}
+.wheel{width:100%;height:100%;border-radius:50%;position:relative;border:2px solid var(--line);box-shadow:4px 4px 0 var(--sh)}
+.lab{position:absolute;left:50%;top:50%;width:0;height:0}
+.lab span{position:absolute;left:-30px;width:60px;text-align:center;font-size:.8rem;font-weight:800;top:-112px}
+.hub{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:50%;background:var(--card);border:2px solid var(--line)}
+.slot{font-family:var(--mono);font-size:3rem;font-weight:600;border:2px solid var(--line);border-radius:12px;padding:18px 30px;background:var(--card);box-shadow:4px 4px 0 var(--sh)}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.c{width:68px;height:100px;border:2px solid var(--line);border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 var(--sh);transition:transform .4s}
+.c.open{transform:rotateY(360deg);cursor:default;background:var(--card);color:var(--mut);box-shadow:none}.c.win{background:var(--mint);color:#101522}
+.go{color:var(--blue);font-weight:700;cursor:pointer;font-size:.85rem}
+.ticket{display:flex;background:var(--card);border:2px solid var(--line);border-radius:16px;position:relative;box-shadow:4px 4px 0 var(--sh);text-align:left}
+.ticket:before,.ticket:after{content:"";position:absolute;right:87px;width:20px;height:20px;border-radius:50%;background:var(--bg);border:2px solid var(--line)}
+.ticket:before{top:-10px;clip-path:inset(10px 0 0 0)}.ticket:after{bottom:-10px;clip-path:inset(0 0 10px 0)}
+.tmain{flex:1;padding:16px 18px;display:grid;gap:12px;min-width:0}
+.route{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.code{font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+.route small{display:block;font-size:.72rem;color:var(--mut);margin-top:2px}
+.route hr{flex:1;border:0;border-top:2px dashed var(--line);margin:0;opacity:.35}
+.meta{display:flex;gap:18px}.meta b{display:block;font-size:.95rem}
+.stub{width:98px;border-left:2px dashed var(--line);padding:14px 10px;display:grid;gap:8px;align-content:center;text-align:center}
+.barcode{height:44px;background:repeating-linear-gradient(90deg,var(--line) 0 2px,transparent 2px 4px,var(--line) 4px 5px,transparent 5px 8px)}
+.panel{background:var(--panel);color:#fff;border-radius:16px;border:2px solid var(--line);box-shadow:4px 4px 0 var(--sh);padding:16px;text-align:center}
+.panel .label{color:#9db0ff}
+#scene{width:100%;overflow:hidden;display:block;margin:6px 0}
+#rb{fill:none;stroke:#3b4666;stroke-width:3;stroke-dasharray:2 8;stroke-linecap:round}
+#fp{fill:none;stroke:#2ED3A5;stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1s linear}
+#scene .dot{fill:#101522;stroke:#fff;stroke-width:3}
+#scene text{fill:#9db0ff;font-size:9px;letter-spacing:.15em;text-anchor:middle;font-family:var(--mono)}
+.cl{stroke:#3b4666;stroke-width:1.5;stroke-linecap:round}
+#scene.run .cl{animation:drift 10s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-420px)}}
+#jet path{fill:#fff}
+.clock{font-family:var(--mono);font-size:clamp(2.4rem,12vw,3.6rem);font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.line{height:12px;border:2px solid var(--line);border-radius:7px;background:var(--card);overflow:hidden}
+.line i{display:block;height:100%;background:var(--mint);width:0;transition:width 1s linear}
+.bars{display:flex;gap:8px;align-items:end;height:170px;width:100%;max-width:420px}
+.bars div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px;font-size:.65rem;font-weight:700;color:var(--mut)}
+.bars b{display:block;width:100%;background:var(--blue);border:2px solid var(--line);border-radius:6px 6px 0 0;min-height:5px}.bars .t b{background:var(--mint)}.bars .t{color:var(--ink)}
+.rvf{display:flex;gap:12px;width:100%;max-width:420px;align-items:end}
+.rvf input{flex:1;width:auto;text-align:left;font-family:inherit;font-size:1rem;padding:10px 12px}
+#rvlist{width:100%;max-width:420px;text-align:left;display:grid;gap:18px}
+.rv{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;margin-top:8px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.rv span{display:grid;gap:3px}.rv em{font-style:normal;font-family:var(--mono);font-size:.68rem;color:var(--mut)}
+.rv .acts{display:flex;gap:14px;align-items:center}.rv button{padding:7px 14px}
+.x{color:var(--mut);font-size:.72rem;cursor:pointer;text-decoration:underline}
+#stamps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;max-width:380px}
+.st{aspect-ratio:1;border:2px dashed var(--mut);color:var(--mut);border-radius:50%;display:grid;place-content:center;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;text-align:center;transition:transform .25s}
+.st b{font-family:var(--mono);font-size:1.05rem;display:block}.st em{font-style:normal}
+.st.on{border-style:solid;color:var(--blue);outline:1px solid currentColor;outline-offset:3px;transform:rotate(-8deg)}
+.st.on:nth-child(3n+2){color:#12a37e;transform:rotate(6deg)}.st.on:nth-child(3n){color:#d99a00;transform:rotate(-4deg)}
+.st.on:hover{transform:rotate(0) scale(1.08)}
+#land{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:9;text-align:center;padding:24px;animation:fadein .6s ease both}
+#land[hidden]{display:none}
+.stamp{width:190px;height:190px;border:3px solid var(--blue);outline:2px solid var(--blue);outline-offset:6px;color:var(--blue);border-radius:50%;display:grid;place-content:center;margin:0 auto 26px;animation:stamp .7s cubic-bezier(.2,1.4,.4,1) .4s both}
+.stamp b{font-family:var(--mono);font-size:2.4rem;font-weight:600;letter-spacing:.08em}.stamp span{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+@keyframes stamp{from{transform:scale(2.4) rotate(-35deg);opacity:0}to{transform:scale(1) rotate(-10deg);opacity:1}}
+#cf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#cf i{position:absolute;top:-16px;width:6px;height:14px;background:var(--blue);animation:fall linear infinite}
+#cf i:nth-child(3n){background:var(--mint)}#cf i:nth-child(3n+1){background:var(--sun)}
+@keyframes fall{to{transform:translateY(110vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.page,#scene.run .cl,#cf i,.stamp{animation:none}button{transition:none}}
+.seg{display:flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg a{padding:6px 16px;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--mut)}.seg a.on{background:var(--blue);color:#fff}
+#p-recall{align-items:stretch;gap:16px}
+.ctr{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.thumbs img{width:84px;height:84px;object-fit:cover;border:2px solid var(--line);border-radius:10px}
+.qc{border:2px solid var(--line);border-radius:12px;padding:12px;background:var(--card);display:grid;gap:10px;box-shadow:3px 3px 0 var(--sh)}
+.qt{font-weight:700;font-size:1.02rem}
+textarea{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:10px;min-height:64px;resize:vertical;outline:0;width:100%}
+textarea:focus{box-shadow:3px 3px 0 var(--blue)}
+.ans{border:2px dashed var(--line);border-radius:10px;padding:10px 12px;background:var(--mints)}
+.ans[data-s="1"]{border-style:solid;border-color:var(--mint)}.ans[data-s="2"]{background:var(--soft)}
+.opt{flex-direction:column;align-items:center;gap:6px}
+button.sm{padding:7px 14px;font-size:.85rem}
+</style><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet"></head>
+<body><div class="app">
+<nav><div class="logo"><svg viewBox="-40 -26 80 52" aria-hidden="true"><path transform="scale(.85)" fill="#fff" d="M26 0C26 -2.2 22 -3.2 14 -3.4L-6 -4L-18 -20L-24 -20L-17 -3.8L-24 -3.6L-28 -9L-32 -9L-29 -2.6C-30 -1.5 -30 1.5 -29 2.6L-32 9L-28 9L-24 3.6L-17 3.8L-24 20L-18 20L-6 4L14 3.4C22 3.2 26 2.2 26 0Z"/></svg>Study Roulette</div><div class="tabs"><a data-p="roll">roll</a><a data-p="session">session</a><a data-p="review">review</a><a data-p="recall">recall</a><a data-p="week">week</a><a data-p="passport">passport</a></div></nav>
+
+<section class="page" id="p-roll">
+ <div class="label">today’s study time</div>
+ <div class="mode"><a data-m="wheel">wheel</a><a data-m="roulette">roulette</a></div>
+ <div class="set">
+  <label>min<input id="min" type="number" min="1"></label>
+  <label>max<input id="max" type="number" min="1"></label>
+  <label>step<input id="step" type="number" min="1"></label>
+ </div>
+ <div id="stage"><span class="mut">minutes, between your min and max</span></div>
+ <div class="huge" id="goal">—</div>
+ <button id="roll">Spin</button>
+ <a class="go" data-go="session" hidden id="gosess">start studying →</a>
+</section>
+
+<section class="page" id="p-session" hidden>
+ <span id="pass" hidden></span>
+ <div class="ticket">
+  <div class="tmain">
+   <div class="label">boarding pass · focus class</div>
+   <div class="route"><div><div class="code">HOME</div><small>Departure</small></div><hr><div style="text-align:right"><div class="code" id="tcode">---</div><small id="tcity">No flight yet</small></div></div>
+   <div class="meta"><div><span class="label">duration</span><b id="tdur">—</b></div><div><span class="label">gate</span><b id="tgate">—</b></div><div><span class="label">seat</span><b id="tseat">—</b></div></div>
+  </div>
+  <div class="stub"><span class="label">flight</span><b id="tfl" style="font-family:var(--mono)">SR 000</b><div class="barcode"></div></div>
+ </div>
+ <div class="panel">
+  <span class="label">in flight</span>
+  <svg id="scene" viewBox="0 0 340 150" aria-hidden="true">
+   <line class="cl" x1="320" y1="40" x2="370" y2="40" style="animation-delay:-2s"/>
+   <line class="cl" x1="350" y1="75" x2="390" y2="75" style="animation-delay:-6s;animation-duration:14s"/>
+   <line class="cl" x1="330" y1="100" x2="370" y2="100" style="animation-delay:-9s;animation-duration:12s"/>
+   <path id="rb" d="M30 120 Q170 -20 310 120"/>
+   <path id="fp" pathLength="1" d="M30 120 Q170 -20 310 120"/>
+   <circle class="dot" cx="30" cy="120" r="6"/><circle class="dot" cx="310" cy="120" r="6"/>
+   <text x="30" y="143">HOME</text><text x="310" y="143" id="dcode">---</text>
+   <g id="jet"><path transform="scale(.9)" d="M26 0C26 -2.2 22 -3.2 14 -3.4L-6 -4L-18 -20L-24 -20L-17 -3.8L-24 -3.6L-28 -9L-32 -9L-29 -2.6C-30 -1.5 -30 1.5 -29 2.6L-32 9L-28 9L-24 3.6L-17 3.8L-24 20L-18 20L-6 4L14 3.4C22 3.2 26 2.2 26 0Z"/></g>
+  </svg>
+  <div class="clock" id="clock">00:00:00</div>
+  <span class="label" id="eta">roll a time to get a flight</span>
+ </div>
+ <div class="mut" id="today" style="text-align:center">today 0m</div>
+ <div class="line"><i id="pbar"></i></div>
+ <div class="row"><button id="tbtn">Start</button></div>
+ <div class="row"><label class="ml">add minutes<input id="man" type="number" min="1" placeholder="25"></label><button class="alt" id="add">Add</button></div>
+</section>
+
+<section class="page" id="p-review" hidden>
+ <div class="label">2 · 3 · 5 · 7 review</div>
+ <div class="mut">add what you studied today. Reviews come on day 2, 3, 5 and 7.</div>
+ <div class="rvf"><input id="rvname" type="text" placeholder="topic, e.g. physics chapter 4"><button id="rvadd">Add</button></div>
+ <div id="rvlist"></div>
+</section>
+
+<section class="page" id="p-recall" hidden>
+ <div class="ctr"><div class="label">active recall</div><div class="mut">Upload a photo of what you studied. You’ll get questions to answer from memory.</div></div>
+ <div class="ctr" id="rwrap">
+  <div class="row opt"><span class="label">gemini key</span><input type="password" id="rkey" placeholder="Paste Google AI Studio API key" autocomplete="off" style="flex:1;min-width:0"><button class="alt sm" id="rkeysave">Save</button></div>
+  <input type="file" id="rfile" accept="image/*" multiple hidden>
+  <button class="alt" id="rpick">Choose photo</button>
+  <div class="thumbs" id="rthumbs"></div>
+  <div class="row opt"><span class="label">questions</span><div class="seg" id="rnum"><a data-n="3">3</a><a data-n="5" class="on">5</a><a data-n="8">8</a></div></div>
+  <div class="row opt"><span class="label">difficulty</span><div class="seg" id="rdiff"><a data-d="easy">easy</a><a data-d="medium" class="on">medium</a><a data-d="hard">hard</a></div></div>
+  <button id="rgo">Make questions</button>
+  <div class="mut" id="rmsg"></div>
+ </div>
+ <div class="mut" id="rna" hidden>Active recall needs a Gemini API key.</div>
+ <div id="rres" class="ctr" style="align-items:stretch;text-align:left;gap:14px"></div>
+</section>
+
+<section class="page" id="p-passport" hidden>
+ <div class="label">passport</div>
+ <div class="huge" id="pcount">0 / 12</div>
+ <div class="mut" id="psub">land a flight to collect your first stamp</div>
+ <div id="stamps"></div>
+</section>
+
+<div id="land" hidden>
+ <div id="cf"></div>
+ <div style="position:relative">
+  <div class="label" style="margin-bottom:26px">you have landed</div>
+  <div class="stamp"><b id="lc"></b><span id="ln"></span></div>
+  <div class="mut" id="lm" style="margin-bottom:26px"></div>
+  <button id="collect">Collect stamp</button>
+ </div>
+</div>
+
+<section class="page" id="p-week" hidden>
+ <div class="label">this week</div>
+ <div class="huge" id="wtotal">0m</div>
+ <div class="bars" id="bars"></div>
+</section>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],KEY="study-roulette-v1";
+let D={set:{min:30,max:120,step:5},goals:{},log:{},run:0,last:"",mode:"wheel",pass:{},flights:[],topics:[]};
+try{const s=localStorage.getItem(KEY);if(s)D=Object.assign(D,JSON.parse(s))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+const key=d=>{d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const fmt=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?(r?h+"h "+r+"m":h+"h"):r+"m"};
+const pad=n=>String(n).padStart(2,"0"),wait=ms=>new Promise(r=>setTimeout(r,ms));
+let busy=false,page="roll";
+function show(p){page=p;["roll","session","review","recall","week","passport"].forEach(n=>$("#p-"+n).hidden=n!==p);$$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.p===p));try{history.replaceState(null,"","#"+p)}catch(e){}render()}
+$$("nav a").forEach(a=>a.onclick=()=>show(a.dataset.p));
+$("#gosess").onclick=()=>show("session");
+function setMode(m){D.mode=m;$$(".mode a").forEach(a=>a.classList.toggle("on",a.dataset.m===m));$("#roll").textContent=m==="wheel"?"Spin":"Roll";save()}
+$$(".mode a").forEach(a=>a.onclick=()=>{if(!busy)setMode(a.dataset.m)});
+function settings(){let mn=Math.max(1,+$("#min").value||1),mx=Math.max(1,+$("#max").value||1),st=Math.max(1,+$("#step").value||1);if(mn>mx)[mn,mx]=[mx,mn];D.set={min:mn,max:mx,step:st};$("#min").value=mn;$("#max").value=mx;$("#step").value=st;save()}
+function rv(){const s=D.set,n=Math.floor((s.max-s.min)/s.step);return s.min+s.step*Math.floor(Math.random()*(n+1))}
+
+async function wheel(st,final){
+ const n=8,vals=Array.from({length:n},rv),w=Math.floor(Math.random()*n);vals[w]=final;
+ const cols=vals.map((_,i)=>`${["var(--card)","var(--soft)","var(--mints)"][i%3]} ${i*45}deg ${(i+1)*45}deg`).join(",");
+ st.innerHTML=`<div class="ww"><div class="wheel" style="background:conic-gradient(${cols})">${vals.map((v,i)=>`<div class="lab" style="transform:rotate(${i*45+22.5}deg)"><span>${fmt(v)}</span></div>`).join("")}<div class="hub"></div></div></div>`;
+ const el=st.querySelector(".wheel"),off=(Math.random()-.5)*28;
+ await wait(50);el.style.transition="transform 4.5s cubic-bezier(.12,.7,.1,1)";
+ el.style.transform=`rotate(${360*(5+Math.floor(Math.random()*3))+360-(w*45+22.5+off)}deg)`;
+ await wait(4700);
+}
+async function slot(st,final){
+ st.innerHTML='<div class="slot" id="sl"></div>';const el=$("#sl");let d=35;
+ while(d<420){el.textContent=fmt(rv());await wait(d);d*=1.13}
+ el.textContent=fmt(final);await wait(500);
+}
+async function cards(st,final){
+ st.innerHTML='<div><span class="mut">pick a card</span><div class="cards" id="cs"></div></div>';
+ const box=$("#cs");let res;const p=new Promise(r=>res=r);
+ for(let i=0;i<5;i++){const c=document.createElement("div");c.className="c";c.textContent="?";
+  c.onclick=()=>{[...box.children].forEach(x=>{x.classList.add("open");x.onclick=null;if(x===c){x.textContent=fmt(final);x.classList.add("win")}else x.textContent=fmt(rv())});setTimeout(res,1000)};
+  box.appendChild(c)}
+ await p;
+}
+$("#roll").onclick=async()=>{
+ if(busy)return;busy=true;$("#roll").disabled=true;settings();
+ let f=wheel;
+ if(D.mode==="roulette"){const pool=[slot,cards].filter(x=>x.name!==D.last);f=pool[Math.floor(Math.random()*pool.length)]}
+ D.last=f.name;const final=rv();
+ await f($("#stage"),final);
+ D.goals[key()]=final;D.pass[key()]={i:Math.floor(Math.random()*DEST.length),base:(D.log[key()]||0)+elapsed()};save();render();busy=false;$("#roll").disabled=false;
+};
+
+const elapsed=()=>D.run?Math.floor((Date.now()-D.run)/1000):0;
+$("#tbtn").onclick=()=>{if(D.run){const k=key();D.log[k]=(D.log[k]||0)+elapsed();D.run=0}else D.run=Date.now();save();render()};
+$("#add").onclick=()=>{const m=+$("#man").value;if(!(m>0))return;const k=key();D.log[k]=(D.log[k]||0)+Math.round(m*60);$("#man").value="";save();render()};
+
+function render(){
+ const k=key(),e=elapsed(),today=(D.log[k]||0)+e,g=D.goals[k];
+ $("#goal").textContent=g?fmt(g):"—";$("#gosess").hidden=!g;
+ $("#clock").textContent=pad(Math.floor(e/3600))+":"+pad(Math.floor(e%3600/60))+":"+pad(e%60);
+ $("#tbtn").textContent=D.run?"Stop & save":"Start";
+ $("#today").textContent="today "+fmt(today/60)+(g?" / "+fmt(g):"");
+ $("#pbar").style.width=(g?Math.min(100,today/60/g*100):0)+"%";
+ flight(today,g,k);if(page==="passport")passport();const rk=JSON.stringify(D.topics)+k;if(rk!==revKey){revKey=rk;reviews()}
+ const now=new Date(),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+ const names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],secs=[];let tot=0;
+ for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const kk=key(d),s=(D.log[kk]||0)+(kk===k?e:0);secs.push(s);tot+=s}
+ const mx=Math.max(3600,...secs),ti=(now.getDay()+6)%7;
+ $("#wtotal").textContent=fmt(tot/60);
+ $("#bars").innerHTML=secs.map((s,i)=>`<div class="${i===ti?"t":""}"><span>${s?fmt(s/60):""}</span><b style="height:${s/mx*100}%"></b><span>${names[i]}</span></div>`).join("");
+}
+const DEST=[["Tokyo","HND"],["Paris","CDG"],["New York","JFK"],["London","LHR"],["Sydney","SYD"],["Seoul","ICN"],["Dubai","DXB"],["Singapore","SIN"],["Rome","FCO"],["Cairo","CAI"],["Reykjavik","KEF"],["Cape Town","CPT"]];
+function place(p){try{const r=$("#fp"),L=r.getTotalLength(),t=L*p,a=r.getPointAtLength(t),b=r.getPointAtLength(Math.min(L,t+1)),c=r.getPointAtLength(Math.max(0,t-1));
+ $("#jet").setAttribute("transform",`translate(${a.x} ${a.y}) rotate(${Math.atan2(b.y-c.y,b.x-c.x)*180/Math.PI})`)}catch(e){}}
+function flight(today,g,k){
+ if(g&&!D.pass[k])D.pass[k]={i:Math.floor(Math.random()*DEST.length),base:0};
+ const P=D.pass[k];
+ if(!g||!P){$("#pass").textContent="no boarding pass yet";ticket();$("#eta").textContent="roll a time to get a flight";$("#fp").style.strokeDashoffset=1;$("#scene").classList.remove("run");place(0);return}
+ const [city,code]=DEST[P.i],tot=g*60,done=Math.max(0,today-P.base),p=Math.min(1,done/tot),left=fmt(Math.ceil((tot-done)/60));
+ $("#pass").textContent="HOME → "+city+" ("+code+") · "+fmt(g);$("#dcode").textContent=code;ticket(city,code,g,P.i);
+ $("#fp").style.strokeDashoffset=1-p;place(p);
+ $("#eta").textContent=p>=1?"landed":D.run?"landing in "+left:"on the ground · "+left+" to go";
+ $("#scene").classList.toggle("run",!!D.run&&p<1);
+ if(p>=1&&!P.done){P.done=1;D.flights.push({d:k,i:P.i,m:g});save();land(city,code,g)}
+}
+function ticket(city,code,g,i){const s=(a,v)=>$(a).textContent=v;
+ s("#tcode",code||"---");s("#tcity",city||"No flight yet");s("#tdur",g?fmt(g):"—");
+ s("#tgate",g?"ABCDEF"[i%6]+(3+i*2%17):"—");s("#tseat",g?(10+i*3%20)+"ABCDEF"[(i+2)%6]:"—");s("#tfl",g?"SR "+String(100+i*37).padStart(3,"0"):"SR 000")}
+function land(city,code,g){
+ $("#lc").textContent=code;$("#ln").textContent=city;$("#lm").textContent=fmt(g)+" of focus";
+ const cf=$("#cf");cf.innerHTML="";
+ for(let i=0;i<36;i++){const s=document.createElement("i");s.style.left=Math.random()*100+"%";s.style.animationDelay=Math.random()*1.5+"s";s.style.animationDuration=2+Math.random()*2+"s";s.style.setProperty("--r",(Math.random()*720-360)+"deg");cf.appendChild(s)}
+ $("#land").hidden=false;
+}
+$("#collect").onclick=()=>{$("#land").hidden=true;show("passport")};
+function passport(){
+ const seen={};D.flights.forEach(f=>{(seen[f.i]=seen[f.i]||[]).push(f)});
+ const n=Object.keys(seen).length,mins=D.flights.reduce((a,f)=>a+f.m,0);
+ $("#pcount").textContent=n+" / "+DEST.length;
+ $("#psub").textContent=D.flights.length?D.flights.length+" flights · "+fmt(mins)+" in the air":"land a flight to collect your first stamp";
+ $("#stamps").innerHTML=DEST.map((d,i)=>{const f=seen[i];return f?`<div class="st on"><b>${d[1]}</b><span>${d[0]}</span><em>×${f.length}</em></div>`:`<div class="st"><b>?</b><span>locked</span></div>`}).join("");
+}
+const OFF=[1,2,4,6],DAYN=[2,3,5,7];let revKey="";
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pd=s=>{const[a,b,c]=s.split("-");return new Date(+a,+b-1,+c)};
+const addd=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return key(d)};
+const diff=(a,b)=>Math.round((pd(a)-pd(b))/864e5);
+function reviews(){
+ const k=key(),due=[],up=[];let mast=0;
+ D.topics.forEach(t=>{const n=t.done.indexOf(false);if(n<0){mast++;return}const dt=addd(t.start,OFF[n]);(dt<=k?due:up).push({t,n,dt})});
+ up.sort((a,b)=>a.dt<b.dt?-1:1);
+ const row=(x,isDue)=>{const dd=diff(x.dt,k),when=isDue?(dd<0?"overdue "+(-dd)+"d":"today"):(dd===1?"tomorrow":"in "+dd+" days");
+  return `<div class="rv"><span><b style="font-weight:400">${esc(x.t.name)}</b><em>review ${x.n+1} of 4 · day ${DAYN[x.n]} · ${when}</em></span><span class="acts"><a class="x" data-x="${x.t.id}">remove</a>${isDue?`<button data-d="${x.t.id}">done</button>`:""}</span></div>`};
+ const sec=(t,a,isDue,empty)=>`<div><div class="label" style="margin-bottom:6px">${t}</div>${a.length?a.map(x=>row(x,isDue)).join(""):`<div class="mut" style="padding:10px 0">${empty}</div>`}</div>`;
+ $("#rvlist").innerHTML=sec("due today",due,true,D.topics.length?"nothing due — nice":"add a topic to begin")+(up.length?sec("upcoming",up,false,""):"")+(mast?`<div class="mut">${mast} topic${mast>1?"s":""} fully reviewed ✓</div>`:"");
+ $('nav [data-p="review"]').textContent=due.length?"review ("+due.length+")":"review";
+}
+$("#rvadd").onclick=()=>{const n=$("#rvname").value.trim();if(!n)return;D.topics.push({id:Date.now(),name:n,start:key(),done:[false,false,false,false]});$("#rvname").value="";save();render()};
+$("#rvname").onkeydown=e=>{if(e.key==="Enter")$("#rvadd").click()};
+$("#rvlist").onclick=e=>{const b=e.target.closest("[data-d],[data-x]");if(!b)return;const id=+(b.dataset.d||b.dataset.x),t=D.topics.find(x=>x.id===id);if(!t)return;if(b.dataset.d){const n=t.done.indexOf(false);if(n>=0)t.done[n]=true}else D.topics=D.topics.filter(x=>x!==t);save();render()};
+let rq=[],rfiles=[],rn=5,rd="medium",rdu="medium",rtopic="",rbusy=false,rs=null,rnotes="",rasked=[];
+const rmsg=t=>$("#rmsg").textContent=t||"";
+// Paste your Gemini key between the quotes to build it into the page (everyone who opens the page can then use it without entering one).
+// Warning: anyone can read it by viewing the page source.
+const EMBEDDED_KEY="AQ.Ab8RN6IvXemPBSURKeiFwLdbGz5x3k2BSEmSZXXnbJEKAGBCZw";
+// Backend: paste your Cloudflare Worker URL here (see worker.js). When set, no key is needed in the page.
+const PROXY_URL="";
+const GEMINI_MODEL="gemini-3.8-flash";
+const gkey=()=>{if(EMBEDDED_KEY)return EMBEDDED_KEY;try{return localStorage.getItem("gemini_key")||""}catch(e){return ""}};
+const krow=$("#rkey").closest(".row");
+const hideKey=()=>{if(!krow||krow.hidden)return;krow.hidden=true;if(!EMBEDDED_KEY&&!PROXY_URL){const a=document.createElement("a");a.textContent="change key";a.className="mut";a.style.cssText="cursor:pointer;font-size:12px;text-decoration:underline";a.onclick=()=>{krow.hidden=false;a.remove()};krow.after(a)}};
+if(PROXY_URL||gkey())hideKey();
+try{$("#rkey").value=gkey()}catch(e){}
+$("#rkeysave").onclick=()=>{const v=$("#rkey").value.trim();try{localStorage.setItem("gemini_key",v);rmsg(v?"Key saved on this device.":"Key cleared.");if(v)hideKey()}catch(e){rmsg("Couldn’t save the key here; it will be used for this session only.")}};
+const b64c=new Map();
+const toB64=f=>b64c.has(f)?Promise.resolve(b64c.get(f)):new Promise((res,rej)=>{const r=new FileReader();r.onerror=()=>rej(new Error("read"));r.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error("img"));img.onload=()=>{const M=1600,k=Math.min(1,M/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);{const d=c.toDataURL("image/jpeg",0.85).split(",")[1];b64c.set(f,d);res(d)}};img.src=r.result};r.readAsDataURL(f)});
+async function geminiJson(prompt,files){
+ const key=PROXY_URL?"":(EMBEDDED_KEY||$("#rkey").value.trim()||gkey());
+ if(!PROXY_URL&&!key)throw{code:"no_key"};
+ const parts=[{text:prompt}];
+ for(const f of files)parts.push({inline_data:{mime_type:"image/jpeg",data:await toB64(f)}});
+ let resp;
+ try{resp=await fetch(PROXY_URL||("https://generativelanguage.googleapis.com/v1beta/models/"+GEMINI_MODEL+":generateContent"),{method:"POST",headers:PROXY_URL?{"Content-Type":"application/json"}:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify({contents:[{parts}],generationConfig:{responseMimeType:"application/json",temperature:0.4}})})}catch(e){throw{code:"network"}}
+ if(!resp.ok){let m="";try{const j=await resp.json();m=(j.error&&(j.error.message||j.error.status))||""}catch(e){}throw{code:resp.status===429?"rate_limited":"http",status:resp.status,msg:m}}
+ const data=await resp.json();
+ if(!(data.candidates&&data.candidates.length))throw{code:"blocked",msg:(data.promptFeedback&&data.promptFeedback.blockReason)||""};
+ const txt=(((data.candidates||[])[0]||{}).content||{}).parts;
+ const t=(txt||[]).map(p=>p.text||"").join("").replace(/```json|```/g,"").trim();
+ try{return JSON.parse(t)}catch(e){throw{code:"parse"}}
+}
+$("#rpick").onclick=()=>$("#rfile").click();
+$("#rfile").onchange=e=>{rfiles=[...e.target.files].slice(0,4);rnotes="";rasked=[];const t=$("#rthumbs");t.innerHTML="";rmsg("");
+ rfiles.forEach(f=>{const r=new FileReader();r.onload=()=>{const i=document.createElement("img");i.src=r.result;i.alt="study photo";t.appendChild(i)};r.readAsDataURL(f)});
+ $("#rpick").textContent=rfiles.length?"Change photo":"Choose photo"};
+$$("#rnum a").forEach(a=>a.onclick=()=>{rn=+a.dataset.n;$$("#rnum a").forEach(x=>x.classList.toggle("on",x===a))});
+const DIFF={easy:"Difficulty: easy. Test basic recall of key terms, facts, and definitions stated directly in the material, in simple wording.",medium:"Difficulty: medium. Mix recall with explain-why questions that check understanding of how or why things work.",hard:"Difficulty: hard. Ask apply-it, compare, and multi-step reasoning questions that make the student combine ideas or work through a new example, going beyond what is stated directly while staying grounded in the material."};
+$$("#rdiff a").forEach(a=>a.onclick=()=>{rd=a.dataset.d;$$("#rdiff a").forEach(x=>x.classList.toggle("on",x===a))});
+$("#rgo").onclick=async()=>{
+ if(rbusy)return;
+ if(!rfiles.length){rmsg("Choose a photo of your notes first.");return}
+ if(!(PROXY_URL||EMBEDDED_KEY||$("#rkey").value.trim()||gkey())){rmsg("Paste your Gemini API key first.");return}
+ rbusy=true;$("#rgo").disabled=true;rmsg("Reading your photo… this can take up to a minute.");
+ try{
+  let prompt,r;
+  const fmt=" Return ONLY JSON in this shape: {\"topic\":\"short topic name\",\"notes\":\"a thorough plain-text transcription and summary of ALL the study content, including terms, facts, numbers and relationships, so questions can be written later without the image\",\"questions\":[{\"q\":\"question\",\"a\":\"answer\"}]}";
+  if(rnotes){
+   rmsg("Writing new questions…");
+   prompt="You are helping a student practise active recall. Here are the notes they studied:\n\n"+rnotes+"\n\nWrite exactly "+rn+" questions. "+DIFF[rd]+" Every question must be answerable from the notes. Keep each answer short and clear. Write in the same language as the notes."+(rasked.length?" Do NOT repeat or closely paraphrase any of these earlier questions: "+rasked.slice(-40).map(x=>JSON.stringify(x)).join("; ")+".":"")+fmt.replace(/\"notes\":\"[^"]*\",/,"");
+   r=await geminiJson(prompt,[]);
+  }else{
+   prompt="You are helping a student practise active recall. The attached image(s) are what they just studied. Write exactly "+rn+" questions. "+DIFF[rd]+" Every question must be answerable from the image content. Keep each answer short and clear. Write in the same language as the material. If the image has no readable study content, return an empty questions array."+fmt;
+   r=await geminiJson(prompt,rfiles.slice(0,4));
+   if(r&&r.notes&&String(r.notes).length>80)rnotes=String(r.notes);
+  }
+  const qs=((r&&r.questions)||[]).filter(x=>x&&x.q&&x.a);
+  if(!qs.length){rmsg("Couldn’t find readable study material in that photo. Try a clearer, closer shot.")}
+  else{rq=qs.map(x=>({q:String(x.q),a:String(x.a),s:0}));rq.forEach(x=>rasked.push(x.q));rtopic=String((r&&r.topic)||rtopic||"");rdu=rd;rmsg("");drawq()}
+ }catch(e){const c=e&&e.code;rmsg(c==="http"?"Gemini error "+e.status+(e.msg?": "+e.msg.slice(0,200):"")+(e.status===401||e.status===403?" (check your API key)":""):({no_key:"Paste your Gemini API key first.",rate_limited:"Too many requests. Wait a moment and try again.",network:"Couldn’t reach Gemini. Check your connection (some hosted views block outside requests).",blocked:"Gemini declined to read that image. Try a different photo.",parse:"Gemini’s reply was unreadable. Try again."})[c]||"Something went wrong: "+((e&&e.message)||c||"unknown error"))}
+ rbusy=false;$("#rgo").disabled=false;
+};
+function drawq(){
+ $("#rres").innerHTML=`<div class="row" style="justify-content:space-between;width:100%"><span class="label">${esc(rtopic||"your questions")} · ${rdu}</span><span class="label" id="rscore">0 / ${rq.length} recalled</span></div>`+
+ rq.map((x,i)=>`<div class="qc"><div class="label">question ${i+1}</div><div class="qt">${esc(x.q)}</div><textarea placeholder="Answer from memory first…"></textarea><div class="row" style="justify-content:flex-start"><button class="alt sm" data-sh="${i}">Show answer</button></div><div class="ans" id="ans${i}" hidden><div>${esc(x.a)}</div><div class="row" style="justify-content:flex-start;margin-top:10px"><button class="sm" data-g="${i}">Got it</button><button class="alt sm" data-n="${i}">Review again</button></div></div></div>`).join("")+
+ `<div class="row"><button class="alt" data-more="1">New questions</button>${rtopic?`<button class="alt" data-add="1">Add to 2·3·5·7 review</button>`:""}</div>`;
+}
+$("#rres").onclick=e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+ if(d.sh!==undefined){$("#ans"+d.sh).hidden=false;b.hidden=true}
+ else if(d.g!==undefined||d.n!==undefined){const i=+(d.g!==undefined?d.g:d.n);rq[i].s=d.g!==undefined?1:2;$("#ans"+i).dataset.s=rq[i].s;$("#rscore").textContent=rq.filter(x=>x.s===1).length+" / "+rq.length+" recalled"}
+ else if(d.more!==undefined)$("#rgo").click();
+ else if(d.add!==undefined){D.topics.push({id:Date.now(),name:rtopic,start:key(),done:[false,false,false,false]});save();render();b.textContent="Added ✓";b.disabled=true}
+};
+$("#min").value=D.set.min;$("#max").value=D.set.max;$("#step").value=D.set.step;
+["min","max","step"].forEach(i=>$("#"+i).onchange=settings);
+setMode(D.mode);
+const h=(location.hash||"").slice(1);show(["roll","session","review","recall","week","passport"].includes(h)?h:"roll");
+setInterval(render,1000);
+</script></body></html>
